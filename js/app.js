@@ -17,35 +17,45 @@ const assets = [
 
 // Installations-Event
 self.addEventListener("install", installEvent => {
-  console.log("Service Worker wird installiert...");
+  console.log("Service Worker: Installations-Event wird verarbeitet.");
   installEvent.waitUntil(
     caches.open(staticDevCoffee).then(cache => {
-      console.log("Assets werden gecacht");
+      console.log("Service Worker: Caching von Assets wird gestartet.");
       return cache.addAll(assets);
+    }).then(() => {
+      console.log("Service Worker: Alle Assets wurden erfolgreich gecacht.");
     })
   );
 });
 
 // Aktivierungs-Event
 self.addEventListener("activate", event => {
-  console.log("Service Worker wird aktiviert...");
+  console.log("Service Worker: Aktivierungs-Event wird verarbeitet.");
   // Löschen alter Caches
   event.waitUntil(
     caches.keys().then(keys => {
       return Promise.all(keys
         .filter(key => key !== staticDevCoffee)
-        .map(key => caches.delete(key))
+        .map(key => {
+          console.log(`Service Worker: Löschen des alten Cache: ${key}`);
+          return caches.delete(key);
+        })
       );
+    }).then(() => {
+      console.log("Service Worker: Alte Caches wurden erfolgreich gelöscht.");
     })
   );
 });
 
 // Fetch-Event
 self.addEventListener("fetch", fetchEvent => {
-  console.log("Fetch-Event für: ", fetchEvent.request.url);
+  console.log(`Service Worker: Fetch-Event für: ${fetchEvent.request.url}`);
   fetchEvent.respondWith(
     caches.match(fetchEvent.request).then(res => {
-      return res || fetch(fetchEvent.request);
+      return res || fetch(fetchEvent.request).then(response => {
+        console.log(`Service Worker: Ressource gefetched: ${fetchEvent.request.url}`);
+        return response;
+      });
     })
   );
 });
