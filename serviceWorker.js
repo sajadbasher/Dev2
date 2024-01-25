@@ -1,11 +1,21 @@
-self.addEventListener('install', (event) => {
-  console.log('Service Worker: Installiert');
+const myPWA = "my-pwa-aufgaben-v1";
+const assets = [
+  "index.html",
+  "css/style.css"
+];
+
+self.addEventListener("install", installEvent => {
+   console.log('Service Worker installing ');
 });
 
-self.addEventListener('activate', (event) => {
-  console.log('Service Worker: Aktiviert');
+self.addEventListener('activate', event => {
+  console.log('Service Worker activating');
 });
 
-self.addEventListener('fetch', (event) => {
-  console.log('Service Worker: Fetch-Event für ', event.request.url);
+self.addEventListener("fetch", fetchEvent => {
+  fetchEvent.respondWith(
+    caches.match(fetchEvent.request).then(res => {
+      return res || fetch(fetchEvent.request);
+    })
+  );
 });
